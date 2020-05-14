@@ -1,0 +1,7 @@
+-error message if login failed
+-stop increase number of question after it reach end
+-password field 
+  - show password require if no password provide
+  - ក្រៅពីនឹងគាត់បញ្ចូលប៉ុន្មានក៏ដោយ បើខុសប្រាប់ថាខុសម៉ង មិនបាច់ប្រាប់ថា password អត់គ្រប់អីទេ
+  
+-after submit automatically rediect to userInfo avoid user to submit multiple  time
