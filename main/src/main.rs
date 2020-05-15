@@ -62,29 +62,30 @@ fn main() {
     println!("cors option: {:#?}", cors);
 
     rocket::ignite()
-        .mount("/", routes![register, 
+        .mount("/", routes![hello,
+                            register, 
                             login, 
-                            admin_dashboard, 
-                            user_dashboard, 
-                            error_dashboard,
-                            // check_user_role,
-                            self_destroy,
+                            userData,
                             updateName,
                             updatePassword,
                             updateProfile,
                             updateRole,
                             updatePhone,
-                            // displayUser,
-                            // userData,
-                            test_token,
-                            // upload_profile, 
+                            self_destroy,
+                            admin_dashboard, 
+                            user_dashboard, 
+                            error_dashboard,
                             uploadprofile,
                             get_profile,
-			                test_login,
-			                // userData1,
-                            userData2,
                             save_player_data,
-                            hello])
+                            // test_token,
+                            // upload_profile, 
+			                // test_login,
+			                // userData1,
+                            // userData2,
+                            // check_user_role,
+                            // displayUser,
+                            ])
         .attach(cors)
         .attach(Template::fairing())
         .launch(); 

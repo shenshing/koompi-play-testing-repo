@@ -233,3 +233,39 @@ impl FromDataSimple for test_img {
         Success(new_img)
     }
 }
+
+#[derive(Deserialize, Serialize)]
+pub struct stringObj {
+    pub string: String
+}
+
+impl FromDataSimple for stringObj {
+    type Error = String;
+
+    fn from_data(req: &Request, data: Data) -> data::Outcome<Self, String> {
+
+        let new_obj = stringObj {
+            string: String::from("default string object"),
+        };
+
+        Success(new_obj)
+    }
+}
+
+// #[derive(Deserialize)]
+// pub struct Token {
+//     token: String,
+// }
+
+// impl FromDataSimple for Token {
+//     type Error = String;
+
+//     fn from_data(req: &Request, data: Data) -> data::Outcome<Self, String> {
+
+//         let token = Token {
+//             token: String::from("default token"),
+//         };
+
+//         Success(token)
+//     }
+// }

@@ -10,6 +10,8 @@ use diesel::pg::PgConnection;
 use dotenv::dotenv;
 use std::env;
 
+use self::models::stringObj;
+
 pub fn establish_connection() -> PgConnection {
     dotenv().ok();
 
@@ -461,18 +463,19 @@ pub struct Token {
     token: String,
 }
 
-#[post("/test_token", data = "<token>")]
-pub fn test_token(token: Json<Token>) -> Json<Token> {
-    Json(
-        Token {
-            token: String::from("hello")
-        }
-    )
-}
+// #[post("/test_token", data = "<token>")]
+// pub fn test_token(token: Json<Token>) -> Json<Token> {
+//     Json(
+//         Token {
+//             token: String::from("hello")
+//         }
+//     )
+// }
+
 
 
 #[post("/register", data = "<user>")]
-pub fn register(user: Json<User>) -> String { 
+pub fn register(user: Json<User>) -> Json<stringObj> { 
     let conn = establish_connection();
     
     use diesel::select;
@@ -483,139 +486,205 @@ pub fn register(user: Json<User>) -> String {
     println!("new_user : {:#?}", new_user);
 
     if(insert_user(&conn, new_user.clone()) == DuplicateEmail::Nonexist) {
-        return format!("Register complete!!!")
-    } else if (insert_user(&conn, new_user.clone()) == DuplicateEmail::Exist) {
-        return format!("Email already exist")
-    } else {
-        return format!("Something went wrong when trying to Registering");
-    }
-}
-
-use self::models::{loginInfo};
-#[post("/login", data = "<log_info>")]
-pub fn login(log_info: Json<loginInfo>) -> Json<String> {
-    use self::schema::users::dsl::*;
-
-    let connection = establish_connection();
-
-    let user_list = get_user(&connection);
-    let mut string = String::new();
-
-    for _user in user_list.iter() {
-        if(_user.user_email.trim() == log_info.user_email.trim()) {
-            if(_user.user_password.trim() == log_info.user_password.trim()) {
-                let role = _user.user_role.as_ref().unwrap();
-                string = generate_token(_user.user_email.to_string(),   
-                                        // _user.user_password.to_string(), 
-                                        role.to_string());
-                break;
-            } else {
-                string = format!("Log in Failed");  
+        return Json(
+            stringObj {
+                string: format!("Register complete!!!"),
             }
-        } else {
-            string = format!("Log in Failed");
-        }
+        )
+    } else if (insert_user(&conn, new_user.clone()) == DuplicateEmail::Exist) {
+        return Json(
+            stringObj {
+                string: format!("Email already exist"),
+            }
+        )
+    } else {
+        return Json(
+            stringObj {
+                string: format!("Something went wrong when trying to Registering"),
+            }
+        )
     }
-    return Json(string);
 }
 
-#[post("/delete", data = "<token_>")]
-pub fn self_destroy(token_: Json<Token>) -> String {
-    let dec_res = decode_token(token_.token.clone());
-    // let userName = dec_res.claims.user_name;
-    // let userPassword = dec_res.claims.user_password;
+// use self::models::{loginInfo};
+// #[post("/login", data = "<log_info>")]
+// pub fn login(log_info: Json<loginInfo>) -> Json<String> {
+//     use self::schema::users::dsl::*;
+
+//     let connection = establish_connection();
+
+//     let user_list = get_user(&connection);
+//     let mut string = String::new();
+
+//     for _user in user_list.iter() {
+//         if(_user.user_email.trim() == log_info.user_email.trim()) {
+//             if(_user.user_password.trim() == log_info.user_password.trim()) {
+//                 let role = _user.user_role.as_ref().unwrap();
+//                 string = generate_token(_user.user_email.to_string(),   
+//                                         // _user.user_password.to_string(), 
+//                                         role.to_string());
+//                 break;
+//             } else {
+//                 string = format!("Log in Failed");  
+//             }
+//         } else {
+//             string = format!("Log in Failed");
+//         }
+//     }
+//     return Json(string);
+// }
+
+#[post("/delete")]
+pub fn self_destroy(key: ApiKey) -> Json<stringObj> {
+    // let dec_res = decode_token(token_.token.clone());
+    // let email = dec_res.claims.user_email;
+
+    let token = key.into_inner();
+    let dec_res = decode_token(token.clone());
     let email = dec_res.claims.user_email;
 
     if(remove_user(email.clone()) == deleteMessage::Success) {
-        format!("user delete successfull")
+        Json(
+            stringObj {
+                string: format!("user delete successfull")
+            }
+        )
     } else if (remove_user(email.clone()) == deleteMessage::Unsuccess) {
-        format!("user delete unsuccessful") 
+        Json(
+            stringObj {
+                string: format!("user delete unsuccessful"),
+            }
+        ) 
     } else {
-        format!("Something went wrong when delete user")
+        Json(
+            stringObj {
+                string: format!("Something went wrong when delete user"),
+            }
+        )
     }
 }
 
 use crate::schema::users::columns::user_password;
 use self::models::updateItem;
 #[post("/updateName", data = "<newInfo>")]
-pub fn updateName(key: ApiKey, newInfo: Json<updateItem>) -> String {
+pub fn updateName(key: ApiKey, newInfo: Json<updateItem>) -> Json<stringObj> {
     let token = key.into_inner();
     let find_result = filter_user(token.clone().to_string());
     let decode = decode_token(token.clone().to_string());
-    // let userName = decode.claims.user_name;
-    // let userPassword = decode.claims.user_password;
     let userEmail = decode.claims.user_email;
     let new_name = newInfo.newName.clone().unwrap();
 
     if(update_name(userEmail.clone(), new_name.clone()) == updateMessage::Success) {
-        format!("update userName Successfully")
+        Json(
+            stringObj {
+                string: format!("update userName Successfully"),
+            }
+        )
     } else if (update_name(userEmail.clone(), new_name.clone()) == updateMessage::Unsuccess) {
-        format!("update userName Unsuccessful")
+        Json(
+            stringObj {
+                string: format!("update userName Unsuccessful"),
+            }
+        )
     } else {
-        format!("Something went wrong when trying to update userName")
+        Json(
+            stringObj {
+                string: format!("Something went wrong when trying to update userName"),
+            }
+        )
     }
 }
 
 #[post("/updatePassword", data = "<newInfo>")]
-pub fn updatePassword(key: ApiKey, newInfo: Json<updateItem>) -> String {
+pub fn updatePassword(key: ApiKey, newInfo: Json<updateItem>) -> Json<stringObj> {
     let token = key.into_inner();
     let find_result = filter_user(token.clone().to_string());
     let decode = decode_token(token.clone().to_string());
-    // let userName = decode.claims.user_name;
-    // let userPassword = decode.claims.user_password;
     let userEmail = decode.claims.user_email;
     
     let new_password = newInfo.newPassword.clone().unwrap();
 
     if(update_password(userEmail.clone(), new_password.clone()) == updateMessage::Success) {
-        format!("update user password Successfully")
+        Json(
+            stringObj {
+                string: format!("update user password Successfully"),
+            }
+        )
     } else if (update_password(userEmail.clone(), new_password.clone()) == updateMessage::Unsuccess) {
-        format!("update user password Unsuccessful")
+        Json(
+            stringObj {
+                string: format!("update user password Unsuccessful"),
+            }
+        )
     } else {
-        format!("Something went wrong when trying to update Password")
+        Json(
+            stringObj {
+                string: format!("Something went wrong when trying to update Password"),
+            }
+        )
     }
 }
 
 #[post("/updateProfile", data = "<newInfo>")]
-pub fn updateProfile(key: ApiKey, newInfo: Json<updateItem>) -> String {
+pub fn updateProfile(key: ApiKey, newInfo: Json<updateItem>) -> Json<stringObj> {
     let token = key.into_inner();
     let find_result = filter_user(token.clone().to_string());
     let decode = decode_token(token.clone().to_string());
-    // let userName = decode.claims.user_name;
-    // let userPassword = decode.claims.user_password;
     let userEmail = decode.claims.user_email;
     let new_profile = newInfo.newProfile.clone().unwrap();
 
     if(update_profile(userEmail.clone(), new_profile.clone()) == updateMessage::Success) {
-        format!("update user profile Successfully")
+        Json(
+            stringObj {
+                string: format!("update user profile Successfully"),
+            }
+        )
     } else if (update_profile(userEmail.clone(), new_profile.clone()) == updateMessage::Unsuccess) {
-        format!("update user profile Unsuccessful")
+        Json(
+            stringObj {
+                string: format!("update user profile Unsuccessful"),
+            }
+        )
     } else {
-        format!("Something went wrong when trying to update Profile")
+        Json(
+            stringObj {
+                string: format!("Something went wrong when trying to update Profile"),
+            }
+        )
     }
 }
 
 #[post("/updateRole", data = "<newInfo>")]
-pub fn updateRole(key: ApiKey, newInfo: Json<updateItem>) -> String {
+pub fn updateRole(key: ApiKey, newInfo: Json<updateItem>) -> Json<stringObj> {
     let token = key.into_inner();
     let find_result = filter_user(token.clone().to_string());
     let decode = decode_token(token.clone().to_string());
-    // let userName = decode.claims.user_name;
-    // let userPassword = decode.claims.user_password;
     let userEmail = decode.claims.user_email;
     let new_role = newInfo.newRole.clone().unwrap();
 
     if(update_role(userEmail.clone(), new_role.clone()) == updateMessage::Success) {
-        format!("update user role Successfully")
+        Json(
+            stringObj {
+                string: format!("update user role Successfully"),
+            }
+        )
     } else if (update_role(userEmail.clone(), new_role.clone()) == updateMessage::Unsuccess) {
-        format!("update user role Unsuccessful")
+        Json(
+            stringObj {
+                string: format!("update user role Unsuccessful"),
+            }
+        )
     } else {
-        format!("Something went wrong when trying to update Role")
+        Json(
+            stringObj {
+                string: format!("Something went wrong when trying to update Role"),
+            }
+        )
     }
 }
 
 #[post("/updatePhone", data = "<newInfo>")]
-pub fn updatePhone(key: ApiKey, newInfo: Json<updateItem>) -> String {
+pub fn updatePhone(key: ApiKey, newInfo: Json<updateItem>) -> Json<stringObj> {
     let token = key.into_inner();
     let find_result = filter_user(token.clone().to_string());
     let decode = decode_token(token.clone().to_string());
@@ -625,11 +694,23 @@ pub fn updatePhone(key: ApiKey, newInfo: Json<updateItem>) -> String {
     let new_phone = newInfo.newPhone.clone().unwrap();
 
     if(update_phone(userEmail.clone(), new_phone.clone()) == updateMessage::Success) {
-        format!("update user phone number Successfully")
+        Json(
+            stringObj {
+                string: format!("update user phone number Successfully"),
+            }
+        )
     } else if (update_phone(userEmail.clone(), new_phone.clone()) == updateMessage::Unsuccess) {
-        format!("update user phone number Unsuccessful")
+        Json(
+            stringObj {
+                string: format!("update user phone number Unsuccessful"),
+            }
+        )
     } else {
-        format!("Something went wrong when trying to update Phone Number")
+        Json(
+            stringObj {
+                string: format!("Something went wrong when trying to update Phone Number"),
+            }
+        )
     }
 }
 
@@ -641,15 +722,15 @@ pub fn displayUser() -> String {
 }
 
 //eg: localhost::8000/shing (display username after route to get "user information")
-#[post("/userData", data = "<token_>")]
-pub fn userData(token_: Json<Token>) -> Json<_User> {
-    use self::schema::users::dsl::{users, user_email};
-    let find_result = filter_user(token_.token.clone());
+// #[post("/userData", data = "<token_>")]
+// pub fn userData(token_: Json<Token>) -> Json<_User> {
+//     use self::schema::users::dsl::{users, user_email};
+//     let find_result = filter_user(token_.token.clone());
 
-    let decode = decode_token(token_.token.clone());
-    // let name = decode.claims.user_name;
-    // let password = decode.claims.user_password;
-    let email = decode.claims.user_email;
+//     let decode = decode_token(token_.token.clone());
+//     // let name = decode.claims.user_name;
+//     // let password = decode.claims.user_password;
+//     let email = decode.claims.user_email;
 
 
     // let user = _User {
@@ -664,22 +745,23 @@ pub fn userData(token_: Json<Token>) -> Json<_User> {
     //     phone_number: String::from("default number")
     // };
 
-    if(find_result == Find::Found) {
-        let user = users.filter(user_email.like(email))
-        // .filter(user_password.like(password))
-        .get_result(&establish_connection())
-        .unwrap();
-        println!("true in back-end: {:#?}", user);
-        return Json(user);
-    } else {
-        let user = _User::new();
-        return Json(user);
-    }
-}
+//     if(find_result == Find::Found) {
+//         let user = users.filter(user_email.like(email))
+//         // .filter(user_password.like(password))
+//         .get_result(&establish_connection())
+//         .unwrap();
+//         println!("true in back-end: {:#?}", user);
+//         return Json(user);
+//     } else {
+//         let user = _User::new();
+//         return Json(user);
+//     }
+// }
 
+use crate::models::loginInfo;
 use rocket::http::{Cookies, Cookie};
-#[post("/test_login", data = "<log_info>")]
-pub fn test_login(log_info: Json<loginInfo>) -> String {
+#[post("/login", data = "<log_info>")]
+pub fn login(log_info: Json<loginInfo>) -> Json<stringObj> {
     use self::schema::users::dsl::*;
 
     let connection = establish_connection();
@@ -691,7 +773,7 @@ pub fn test_login(log_info: Json<loginInfo>) -> String {
         if(_user.user_email.trim() == log_info.user_email.trim()) {
             if(_user.user_password.trim() == log_info.user_password.trim()) {
                 let role = _user.user_role.as_ref().unwrap();
-                string = generate_token(_user.user_name.to_string(),   
+                string = generate_token(_user.user_email.to_string(),   
                                         // _user.user_password.to_string(), 
                                         role.to_string());
                 // cookies.add(Cookie::new("token", string.clone()));
@@ -704,42 +786,44 @@ pub fn test_login(log_info: Json<loginInfo>) -> String {
             string = format!("Log in Failed");
         }
     }
-    return string;
+    return Json(stringObj {
+        string
+    });
 }
 
 
-#[get("/userData1")]
-pub fn userData1(cookies: Cookies<'_>) -> Json<_User> {
-    use self::schema::users::dsl::{users, user_email};
-    println!("{:#?}", cookies);
-    let token = cookies.get("token").unwrap().value();
-    println!("token: {}", token.clone());
+// #[get("/userData1")]
+// pub fn userData1(cookies: Cookies<'_>) -> Json<_User> {
+//     use self::schema::users::dsl::{users, user_email};
+//     println!("{:#?}", cookies);
+//     let token = cookies.get("token").unwrap().value();
+//     println!("token: {}", token.clone());
 
 
-    let find_result = filter_user(token.clone().to_string());
+//     let find_result = filter_user(token.clone().to_string());
 
-    let decode = decode_token(token.clone().to_string());
-    // let name = decode.claims.user_name;
-    // let password = decode.claims.user_password;
-    let email = decode.claims.user_email;
+//     let decode = decode_token(token.clone().to_string());
+//     // let name = decode.claims.user_name;
+//     // let password = decode.claims.user_password;
+//     let email = decode.claims.user_email;
 
-    if(find_result == Find::Found) {
-        let user = users.filter(user_email.like(email))
-        // .filter(user_password.like(password))
-        .get_result(&establish_connection())
-        .unwrap();
-        println!("true in back-end: {:#?}", user);
-        return Json(user);
-    } else {
-        let user = _User::new();
-        return Json(user);
-    }
-}
+//     if(find_result == Find::Found) {
+//         let user = users.filter(user_email.like(email))
+//         // .filter(user_password.like(password))
+//         .get_result(&establish_connection())
+//         .unwrap();
+//         println!("true in back-end: {:#?}", user);
+//         return Json(user);
+//     } else {
+//         let user = _User::new();
+//         return Json(user);
+//     }
+// }
 
 // use rocket::Request;
 use self::models::ApiKey;
-#[get("/userData2")]
-pub fn userData2(key: ApiKey) -> Json<_User>{
+#[get("/userData")]
+pub fn userData(key: ApiKey) -> Json<_User>{
     use self::schema::users::dsl::{users, user_email};
     
     let token = key.into_inner();
