@@ -383,7 +383,9 @@ pub fn uploadprofile(key: ApiKey, content_type: &ContentType, data: Data) -> Res
                             let file_name = format!("{}", PasteID::new(name_length));
                             let data = raw.raw;
                             
-                            let file_fmt = format!("../userInfo/image-bank/{}", file_name);
+                            let file_fmt = format!("../userInfo/image-bank/{file_name}", file_name = file_name);
+                            println!("file_fmt upload: {}", file_fmt);
+                            // let file_fmt = format!("../userInfo/image-bank/{}", file_name);
                             let mut file = File::create(file_fmt).unwrap();
                             
                             let write_res = file.write(&data[0..]).unwrap();
@@ -440,6 +442,7 @@ pub fn get_profile(id: PasteID<'_>) -> Result<RawResponse, &'static str> {
     // let file_format = format!("image-bank/{id}", id = id);
     // let file_format = format!("image-bank/{id}", id = id);
     let file_format = format!("../userInfo/image-bank/{id}", id = id);
+    println!("file_fmt get: {}", file_format);
     let mut file = File::open(file_format).unwrap();
 
     let mut buffer = Vec::new();
@@ -472,10 +475,13 @@ pub struct Token {
 //     )
 // }
 
-
-
+// use rocket::response::status;
+// use http::status::StatusCode;
 #[post("/register", data = "<user>")]
-pub fn register(user: Json<User>) -> Json<stringObj> { 
+pub fn register(user: Json<User>) -> Json<stringObj> {
+// pub fn register(user: Json<User>) -> Json<status_code> { 
+// pub fn register(user: Json<User>) -> status {
+// pub fn register(user: Json<User>) -> status_code {
     let conn = establish_connection();
     
     use diesel::select;
@@ -484,6 +490,9 @@ pub fn register(user: Json<User>) -> Json<stringObj> {
     let new_user = user.into_inner();
 
     println!("new_user : {:#?}", new_user);
+
+    // let status = StatusCode::OK;
+    // let mut response = status::Accepted(Some("Register complete!!!"));
 
     if(insert_user(&conn, new_user.clone()) == DuplicateEmail::Nonexist) {
         return Json(
@@ -758,7 +767,8 @@ pub fn displayUser() -> String {
 //     }
 // }
 
-use crate::models::loginInfo;
+
+use crate::models::{loginInfo};
 use rocket::http::{Cookies, Cookie};
 #[post("/login", data = "<log_info>")]
 pub fn login(log_info: Json<loginInfo>) -> Json<stringObj> {
@@ -778,6 +788,7 @@ pub fn login(log_info: Json<loginInfo>) -> Json<stringObj> {
                                         role.to_string());
                 // cookies.add(Cookie::new("token", string.clone()));
                 // println!("{:#?}", cookies);
+                // status = StatusCode::OK;
                 break;
             } else {
                 string = format!("Log in Failed");  
@@ -789,6 +800,26 @@ pub fn login(log_info: Json<loginInfo>) -> Json<stringObj> {
     return Json(stringObj {
         string
     });
+}
+
+use crate::models::facebook_login;
+#[post("/facebook-log", data = "<log_facebook>")]
+pub fn login_with_facebook(log_facebook: Json<facebook_login>) -> Json<stringObj> {
+    use self::schema::facebook_log_users::dsl::*;
+
+    let connection = establish_connection();
+
+    let log_info = log_facebook.into_inner();
+
+    let statement = format!("Select * From facebook_log_users Where user_id={};", log_info.user_id);
+
+    
+
+    return Json(
+        stringObj {
+            string: String::from("hello")
+        }
+    )
 }
 
 

@@ -114,7 +114,7 @@ pub fn generate_token(login_email: String, login_role: String) -> String {
     };
 
     let token = jsonwebtoken::encode(&Header::default(), &claims, "secret".as_ref()).unwrap();
-    return token;
+    return token;   
 }
 
 pub fn decode_token(token: String) -> jsonwebtoken::TokenData<Claims> {

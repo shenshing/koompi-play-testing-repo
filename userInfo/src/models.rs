@@ -221,36 +221,36 @@ pub struct test_img {
     pub path: String,
 }
 
-impl FromDataSimple for test_img {
-    type Error = String;
+// impl FromDataSimple for test_img {
+//     type Error = String;
 
-    fn from_data(req: &Request, data: Data) -> data::Outcome<Self, String> {
+//     fn from_data(req: &Request, data: Data) -> data::Outcome<Self, String> {
 
-        let new_img = test_img {
-            path: String::from("default-path"),
-        };
+//         let new_img = test_img {
+//             path: String::from("default-path"),
+//         };
 
-        Success(new_img)
-    }
-}
+//         Success(new_img)
+//     }
+// }
 
 #[derive(Deserialize, Serialize)]
 pub struct stringObj {
     pub string: String
 }
 
-impl FromDataSimple for stringObj {
-    type Error = String;
+// impl FromDataSimple for stringObj {
+//     type Error = String;
 
-    fn from_data(req: &Request, data: Data) -> data::Outcome<Self, String> {
+//     fn from_data(req: &Request, data: Data) -> data::Outcome<Self, String> {
 
-        let new_obj = stringObj {
-            string: String::from("default string object"),
-        };
+//         let new_obj = stringObj {
+//             string: String::from("default string object"),
+//         };
 
-        Success(new_obj)
-    }
-}
+//         Success(new_obj)
+//     }
+// }
 
 // #[derive(Deserialize)]
 // pub struct Token {
@@ -269,3 +269,50 @@ impl FromDataSimple for stringObj {
 //         Success(token)
 //     }
 // }
+
+// use http::status::StatusCode;
+// #[derive(Serialize, Responder)]
+// pub struct status_code {
+//     status: StatusCode,
+// }
+// use serde::ser::{SerializeStruct, Serializer};
+
+// impl Serialize for status_code {
+//     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+//     where 
+//         S: Serializer,
+//     {
+//         let mut status_code = serializer.serialize_struct("status_code", 1)?;
+//         status_code.serialize_field("status", &self.status)?;
+//         status_code.end()
+//     }
+// }
+
+#[derive(Deserialize, Clone)]
+pub struct facebook_login {
+    pub user_id: String,
+}
+
+impl FromDataSimple for facebook_login {
+    type Error = String;
+
+    fn from_data(req: &Request, data: Data) -> data::Outcome<Self, String> {
+
+        let login = facebook_login {
+            user_id: String::from("default"),
+        };
+        
+        Success(login)
+    }
+}
+
+pub struct facebook_user {
+    pub facebook_user_id:       String,
+    pub facebook_user_name:     String,
+    pub facebook_user_gender:   String,
+    pub facebook_user_email:    String,
+    // pub facebook_user_created:  
+    pub faceboo_user_profile:   String,
+    pub facebook_user_role:     Option<String>,
+    pub facebook_user_phone:    Option<String>
+}
