@@ -113,10 +113,20 @@ pub struct QandA {
 
 #[derive(Serialize, Debug)]
 pub struct Question {
-    pub question_id:        i32,
+    pub question_id:         i32,
     pub question:            String,
     pub correct_answer:      String,
     pub incorrect_answer1:   String,
     pub incorrect_answer2:   String,
     pub incorrect_answer3:   String
+}
+
+#[derive(Serialize, Debug)]
+pub struct Question1 {
+    pub question:       String,
+    pub optionA:        String,
+    pub optionB:        String,
+    pub optionC:        String,
+    pub optionD:        String,
+    pub answer:         String
 }

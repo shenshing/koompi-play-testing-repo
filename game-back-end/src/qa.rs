@@ -137,10 +137,11 @@ pub fn save_question_to_db() {
 
 //random answer
 use crate::models::Question;
+use crate::models::Question1;
 use rand::seq::SliceRandom;
-pub fn random_answer(question: Vec<QADB>) -> Vec<Question> {
+pub fn random_answer(question: Vec<QADB>) -> Vec<Question1> {
     
-    let mut formal_question: Vec<Question> = Vec::new();
+    let mut formal_question: Vec<Question1> = Vec::new();
 
     for q in question.iter() {
         
@@ -163,14 +164,23 @@ pub fn random_answer(question: Vec<QADB>) -> Vec<Question> {
         //     .collect();
         // println!("{:?}", sample);
 
-        let quest = Question {
-            question_id:        q.question_id,
-            question:           q.question.clone(),
-            correct_answer:     q.correct_answer.clone(),
-            incorrect_answer1:  final_answer[0].to_string(),
-            incorrect_answer2:  final_answer[1].to_string(),
-            incorrect_answer3:  final_answer[2].to_string()
+        // let quest = Question {
+        //     question_id:        q.question_id,
+        //     question:           q.question.clone(),
+        //     correct_answer:     q.correct_answer.clone(),
+        //     incorrect_answer1:  final_answer[0].to_string(),
+        //     incorrect_answer2:  final_answer[1].to_string(),
+        //     incorrect_answer3:  final_answer[2].to_string()
 
+        // };
+
+        let quest = Question1 {
+            question:       q.question.clone(),
+            optionA:        q.correct_answer.clone(),
+            optionB:        final_answer[0].to_string(),
+            optionC:        final_answer[1].to_string(),
+            optionD:        final_answer[2].to_string(),
+            answer:         q.correct_answer.clone(),
         };
 
         formal_question.push(quest);
@@ -198,6 +208,6 @@ pub fn random_question() -> Result<Vec<QADB>, diesel::result::Error> {
 
 
 #[get("/question")]
-pub fn question_for_front_end() -> Json<Vec<Question>> {
+pub fn question_for_front_end() -> Json<Vec<Question1>> {
     return Json(random_answer(random_question().unwrap()));
 }

@@ -802,25 +802,27 @@ pub fn login(log_info: Json<loginInfo>) -> Json<stringObj> {
     });
 }
 
-use crate::models::facebook_login;
-#[post("/facebook-log", data = "<log_facebook>")]
-pub fn login_with_facebook(log_facebook: Json<facebook_login>) -> Json<stringObj> {
-    use self::schema::facebook_log_users::dsl::*;
+// use crate::models::facebook_login;
+// #[post("/facebook-log", data = "<log_facebook>")]
+// pub fn login_with_facebook(log_facebook: Json<facebook_login>) -> Json<stringObj> {
+//     use self::schema::facebook_log_users::dsl::*;
 
-    let connection = establish_connection();
+//     let connection = establish_connection();
 
-    let log_info = log_facebook.into_inner();
+//     let log_info = log_facebook.into_inner();
 
-    let statement = format!("Select * From facebook_log_users Where user_id={};", log_info.user_id);
+//     let statement = format!("Select * From facebook_log_users Where user_id={};", log_info.user_id);
 
-    
+//     // match sql_query(statement).execute(&connection) {
+//     //     Ok(1) => 
+//     // }
 
-    return Json(
-        stringObj {
-            string: String::from("hello")
-        }
-    )
-}
+//     return Json(
+//         stringObj {
+//             string: String::from("hello")
+//         }
+//     )
+// }
 
 
 // #[get("/userData1")]
