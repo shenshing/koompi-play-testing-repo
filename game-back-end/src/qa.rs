@@ -139,6 +139,7 @@ pub fn save_question_to_db() {
 use crate::models::Question;
 use crate::models::Question1;
 use rand::seq::SliceRandom;
+use rand::thread_rng;
 pub fn random_answer(question: Vec<QADB>) -> Vec<Question1> {
     
     let mut formal_question: Vec<Question1> = Vec::new();
@@ -174,12 +175,20 @@ pub fn random_answer(question: Vec<QADB>) -> Vec<Question1> {
 
         // };
 
+        // println!("{:#?}", final_answer);
+        let correct_answer: &str = &q.correct_answer.clone()[..];
+        final_answer.push(&&correct_answer);
+        let mut rng = thread_rng();
+        final_answer.shuffle(&mut rng);
+
+
         let quest = Question1 {
             question:       q.question.clone(),
-            optionA:        q.correct_answer.clone(),
-            optionB:        final_answer[0].to_string(),
-            optionC:        final_answer[1].to_string(),
-            optionD:        final_answer[2].to_string(),
+            // optionA:        q.correct_answer.clone(),
+            optionA:        final_answer[0].to_string(),
+            optionB:        final_answer[1].to_string(),
+            optionC:        final_answer[2].to_string(),
+            optionD:        final_answer[3].to_string(),
             answer:         q.correct_answer.clone(),
         };
 
@@ -188,6 +197,7 @@ pub fn random_answer(question: Vec<QADB>) -> Vec<Question1> {
 
     // value
     // return formal_question;
+    // println!("{:#?}", final_answer);
     return formal_question;
 }
 

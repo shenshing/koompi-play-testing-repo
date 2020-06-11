@@ -23,6 +23,8 @@ use game_back_end::qa::random_question;
 use game_back_end::qa::random_answer;
 use game_back_end::qa::static_rocket_route_info_for_question_for_front_end;
 
+use rand::seq::SliceRandom;
+use rand::thread_rng;
 
 fn main() {
 
@@ -50,6 +52,14 @@ fn main() {
     // save_question_to_db();
 
     // let value = random_question();
+
+    // let mut rng = thread_rng();
+    // let mut array = [1, 2, 3, 4, 5, 6, 7];
+    // println!("before shuffle: {:#?}", array);
+    // array.shuffle(&mut rng);
+    // println!("after shuffle: {:#?}", array);
+
+    // println!("{:#?}", value);
 
     // let value1 = random_answer(value.unwrap());
 
